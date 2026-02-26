@@ -1,0 +1,13 @@
+# cron.conf — crontab schedule configuration
+# Copy this file to cron.conf and adjust schedules as desired.
+# Each section is the script filename; schedule uses standard cron syntax.
+#
+# Cron syntax: minute hour day-of-month month day-of-week
+#   0 3 * * *     = 3:00 AM every day
+#   0 8 1 * *     = 8:00 AM on the 1st of each month
+
+[brew-nightly-update.sh]
+schedule = 0 3 * * *
+
+[brew-monthly-inventory.sh]
+schedule = 0 8 1 * *

@@ -1,3 +1,6 @@
+# Local cron configuration (copy from cron.conf.example)
+cron.conf
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

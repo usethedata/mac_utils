@@ -1,11 +1,14 @@
 BINDIR := $(HOME)/bin
 
-.PHONY: all brew-nightly-update brew-monthly-inventory
+.PHONY: all cron
 
-all: brew-nightly-update brew-monthly-inventory
+all: $(BINDIR)/brew-nightly-update.sh $(BINDIR)/brew-monthly-inventory.sh cron
 
-brew-nightly-update:
+$(BINDIR)/brew-nightly-update.sh: brew-nightly-update.sh
 	install -m 0755 brew-nightly-update.sh $(BINDIR)/brew-nightly-update.sh
 
-brew-monthly-inventory:
+$(BINDIR)/brew-monthly-inventory.sh: brew-monthly-inventory.sh
 	install -m 0755 brew-monthly-inventory.sh $(BINDIR)/brew-monthly-inventory.sh
+
+cron: cron.conf
+	python3 install-cron.py
