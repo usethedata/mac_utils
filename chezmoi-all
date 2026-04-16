@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+# chezmoi-all — Run a chezmoi command on all chezmoi-managed hosts.
+#
+# Usage:
+#   chezmoi-all [chezmoi-args...]
+#   chezmoi-all                     # defaults to: chezmoi apply
+#   chezmoi-all apply --dry-run --verbose
+#   chezmoi-all diff
+#   chezmoi-all status
+#
+# Reads the host list from config/chezmoi-hosts.json. If the current machine
+# is in the list, chezmoi runs locally; all others run via SSH using the
+# ssh_alias (which inherits User, Port, etc. from ~/.ssh/config).
+#
+# Unreachable hosts are logged as warnings; the script continues.
+#
+# Requires: BEWMAIN environment variable
+
+set -euo pipefail
+
+if [[ -z "${BEWMAIN:-}" ]]; then
+    echo "Error: BEWMAIN environment variable is not set" >&2
+    exit 1
+fi
+
+CACHE="${BEWMAIN}/Progs/Ongoing/Maintenance/utilities/config/chezmoi-hosts.json"
+LOG_DIR="${BEWMAIN}/Data/logs"
+LOG_FILE="${LOG_FILE:-${LOG_DIR}/chezmoi-all-$(date +%Y%m%d-%H%M%S).log}"
+LOCAL_HOST="$(hostname -s)"
+SSH_TIMEOUT=10
+
+if [[ ! -f "$CACHE" ]]; then
+    echo "Error: Host cache not found at $CACHE" >&2
+    echo "Run: make -C '${BEWMAIN}/Progs/Ongoing/Maintenance/utilities' chezmoi-cache" >&2
+    exit 1
+fi
+
+# Default to "apply" if no arguments given
+if [[ $# -eq 0 ]]; then
+    set -- apply
+fi
+
+mkdir -p "$LOG_DIR"
+
+# Parse host list from JSON (simple grep/sed — no jq dependency needed)
+aliases=()
+while IFS= read -r line; do
+    aliases+=("$line")
+done < <(grep '"ssh_alias"' "$CACHE" | sed 's/.*"ssh_alias": *"//; s/".*//')
+
+total=${#aliases[@]}
+succeeded=0
+failed=0
+skipped=0
+
+log() {
+    local msg="[$(date '+%Y-%m-%d %H:%M:%S')] $*"
+    echo "$msg" | tee -a "$LOG_FILE"
+}
+
+log "chezmoi-all: running 'chezmoi $*' on $total hosts"
+log "Log file: $LOG_FILE"
+echo ""
+
+for alias in "${aliases[@]}"; do
+    log "--- $alias ---"
+
+    if [[ "$alias" == "$LOCAL_HOST" ]]; then
+        # Run locally
+        if chezmoi "$@" 2>&1 | tee -a "$LOG_FILE"; then
+            log "$alias: OK (local)"
+            succeeded=$((succeeded + 1))
+        else
+            log "WARNING: $alias: chezmoi exited with status $?"
+            failed=$((failed + 1))
+        fi
+    else
+        # Check reachability via SSH
+        if ! ssh -o ConnectTimeout="$SSH_TIMEOUT" -o BatchMode=yes "$alias" true 2>/dev/null; then
+            log "WARNING: $alias: unreachable (skipping)"
+            skipped=$((skipped + 1))
+            echo ""
+            continue
+        fi
+
+        # Build a properly quoted remote command
+        # Prepend common paths rather than sourcing profiles, which can have
+        # side effects (e.g. Synology's .profile does exec zsh --login)
+        remote_cmd='export PATH="$HOME/bin:$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"; chezmoi'
+        for arg in "$@"; do
+            remote_cmd+=" $(printf '%q' "$arg")"
+        done
+
+        if ssh -o ConnectTimeout="$SSH_TIMEOUT" "$alias" "$remote_cmd" 2>&1 | tee -a "$LOG_FILE"; then
+            log "$alias: OK (remote)"
+            succeeded=$((succeeded + 1))
+        else
+            log "WARNING: $alias: chezmoi exited with status $?"
+            failed=$((failed + 1))
+        fi
+    fi
+    echo ""
+done
+
+log "Summary: $succeeded succeeded, $failed failed, $skipped unreachable (of $total hosts)"

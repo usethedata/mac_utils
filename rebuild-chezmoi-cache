@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+# rebuild-chezmoi-cache — Parse Cyberinfrastructure device files and write
+# config/chezmoi-hosts.json with hosts that have chezmoi: true.
+#
+# The SSH alias (hostname from frontmatter) is used for connections, which
+# inherits User, Port, etc. from ~/.ssh/config.
+#
+# Requires: BEWMAIN environment variable
+
+set -euo pipefail
+
+if [[ -z "${BEWMAIN:-}" ]]; then
+    echo "Error: BEWMAIN environment variable is not set" >&2
+    exit 1
+fi
+
+INFRA_DIR="${BEWMAIN}/MainVault/Reference/Cyberinfrastructure"
+OUTPUT="${BEWMAIN}/Progs/Ongoing/Maintenance/utilities/config/chezmoi-hosts.json"
+
+if [[ ! -d "$INFRA_DIR" ]]; then
+    echo "Error: Cyberinfrastructure directory not found at $INFRA_DIR" >&2
+    exit 1
+fi
+
+mkdir -p "$(dirname "$OUTPUT")"
+
+# Parse YAML frontmatter from device files for chezmoi: true hosts.
+# Extracts hostname and tailscale_domain. SSH config provides User/Port.
+entries=()
+
+for file in "$INFRA_DIR"/*.md; do
+    [[ "$(basename "$file")" == "README.md" ]] && continue
+
+    # Read frontmatter (between --- lines)
+    in_frontmatter=false
+    hostname=""
+    tailscale_domain=""
+    chezmoi=""
+
+    while IFS= read -r line; do
+        if [[ "$line" == "---" ]]; then
+            if $in_frontmatter; then
+                break
+            else
+                in_frontmatter=true
+                continue
+            fi
+        fi
+        $in_frontmatter || continue
+
+        case "$line" in
+            hostname:*)    hostname="${line#hostname:}"; hostname="${hostname# }" ;;
+            tailscale_domain:*) tailscale_domain="${line#tailscale_domain:}"; tailscale_domain="${tailscale_domain# }" ;;
+            chezmoi:*)     chezmoi="${line#chezmoi:}"; chezmoi="${chezmoi# }" ;;
+        esac
+    done < "$file"
+
+    [[ "$chezmoi" == "true" ]] || continue
+    [[ -n "$hostname" ]] || continue
+
+    entries+=("$hostname|$tailscale_domain")
+done
+
+# Write JSON
+{
+    echo "["
+    for i in "${!entries[@]}"; do
+        IFS='|' read -r alias domain <<< "${entries[$i]}"
+        printf '  {"ssh_alias": "%s", "tailscale_domain": "%s"}' "$alias" "$domain"
+        if (( i < ${#entries[@]} - 1 )); then
+            echo ","
+        else
+            echo ""
+        fi
+    done
+    echo "]"
+} > "$OUTPUT"
+
+echo "Wrote ${#entries[@]} hosts to $OUTPUT"

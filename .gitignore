@@ -1,6 +1,9 @@
 # Local cron configuration (copy from cron.conf.example)
 cron.conf
 
+# Generated host cache (rebuilt from Cyberinfrastructure device files)
+config/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
