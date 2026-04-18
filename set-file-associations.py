@@ -52,6 +52,9 @@ MAPPINGS = [
     ("Log files (.log)",    ".log", "com.microsoft.VSCode", "all"),
     ("Error files (.err)",  ".err", "com.microsoft.VSCode", "all"),
     ("Output files (.out)", ".out", "com.microsoft.VSCode", "all"),
+
+    # Markdown — Marked (Setapp)
+    ("Markdown (.md)", "net.daringfireball.markdown", "com.brettterpstra.marked-setapp", "all"),
 ]
 # ---------------------------------------------------------------------------
 

@@ -124,8 +124,6 @@ VSCODE_UTIS = [
     ("com.apple.property-list", "all"),
     ("com.apple.xml-property-list", "all"),
     ("com.apple.dt.document.ascii-property-list", "all"),
-    # Markdown
-    ("net.daringfireball.markdown", "all"),
     # Plain text
     ("public.plain-text", "all"),
     # Generic source / text (broad — catches many extension-less code files)
