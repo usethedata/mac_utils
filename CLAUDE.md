@@ -8,7 +8,7 @@ A collection of utility scripts for cross-platform *nix automation and various p
 
 Content in this repo should work across all *nix systems Bruce runs (macOS, Ubuntu, Synology DSM). macOS-specific scripts belong in `Progs/Ongoing/Maintenance/mac-scripting/`, not here. A broader reorganization along that boundary is tracked in `Progs/TODO.md`.
 
-**GitHub**: https://github.com/usethedata/mac_utils (public repo — never commit secrets, credentials, API keys, tokens, or any personally identifying information, including hostnames or IP addresses of Bruce's systems.)
+**GitHub**: https://github.com/usethedata/system_utils (public repo — never commit secrets, credentials, API keys, tokens, or any personally identifying information, including hostnames or IP addresses of Bruce's systems.)
 
 ## Conventions
 
