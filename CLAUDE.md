@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-A collection of utility scripts for cross-platform *nix automation and various personal tasks. Scripts are primarily shell scripts, with some Python. This is the canonical source; cross-bear scripts install to `~/bin`, while scripts that are machine-local by design (e.g., the grizzledbear-only `system-status-check/`) install to `~/.local/bin`.
+A collection of utility scripts for cross-platform *nix automation and various personal tasks. Scripts are primarily shell scripts, with some Python. This is the canonical source; cross-system scripts (those intended to run on every *nix system Bruce manages — bears and Synologies) install to `~/bin`, while machine-local or OS-specific scripts (e.g., the grizzledbear-only `system-status-check/`) install to `~/.local/bin`.
 
 Content in this repo should work across all *nix systems Bruce runs (macOS, Ubuntu, Synology DSM). macOS-specific scripts belong in `Progs/Ongoing/Maintenance/mac-scripting/`, not here. A broader reorganization along that boundary is tracked in `Progs/TODO.md`.
 
@@ -16,8 +16,8 @@ Content in this repo should work across all *nix systems Bruce runs (macOS, Ubun
   - `zsh` is Bruce's interactive shell and he installs it on every bear (macOS default; installed on Ubuntu and Synology DSM), but it is **not** guaranteed to exist on a freshly provisioned *nix system. Scripts here must be bash-portable and must not rely on zsh being present.
 - Python scripts: `#!/usr/bin/env python3`.
 - Script install locations follow the convention in `Progs/CLAUDE.md`:
-  - `~/bin/` for cross-bear scripts (target state: distributed via chezmoi)
-  - `~/.local/bin/` for machine-local scripts
+  - `~/bin/` for cross-system scripts (target state: distributed via chezmoi)
+  - `~/.local/bin/` for machine-local or OS-specific scripts
 - Python virtual environments follow the target pattern in `Progs/CLAUDE.md`: `${XDG_DATA_HOME:-$HOME/.local/share}/python/envs/<project>/`.
 
 Update this file as the repository grows to document any shared utilities, installation steps, or conventions that emerge.
