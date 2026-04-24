@@ -26,14 +26,14 @@ fi
 # Prefer a local copy of the host cache so launchd-triggered runs don't need
 # Full Disk Access to read from ~/Library/CloudStorage/Dropbox/...
 LOCAL_CACHE="${XDG_CONFIG_HOME:-$HOME/.config}/chezmoi-all/chezmoi-hosts.json"
-CANONICAL_CACHE="${BEWMAIN}/Progs/Ongoing/Maintenance/utilities/config/chezmoi-hosts.json"
+CANONICAL_CACHE="${BEWMAIN}/Progs/Ongoing/Maintenance/system_utils/config/chezmoi-hosts.json"
 if [[ -f "$LOCAL_CACHE" ]]; then
     CACHE="$LOCAL_CACHE"
 elif [[ -f "$CANONICAL_CACHE" ]]; then
     CACHE="$CANONICAL_CACHE"
 else
     echo "Error: Host cache not found at $LOCAL_CACHE or $CANONICAL_CACHE" >&2
-    echo "Run: make -C '${BEWMAIN}/Progs/Ongoing/Maintenance/utilities' all" >&2
+    echo "Run: make -C '${BEWMAIN}/Progs/Ongoing/Maintenance/system_utils' all" >&2
     exit 1
 fi
 

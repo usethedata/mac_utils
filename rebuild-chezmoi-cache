@@ -15,7 +15,7 @@ if [[ -z "${BEWMAIN:-}" ]]; then
 fi
 
 INFRA_DIR="${BEWMAIN}/MainVault/Reference/Cyberinfrastructure"
-OUTPUT="${BEWMAIN}/Progs/Ongoing/Maintenance/utilities/config/chezmoi-hosts.json"
+OUTPUT="${BEWMAIN}/Progs/Ongoing/Maintenance/system_utils/config/chezmoi-hosts.json"
 
 if [[ ! -d "$INFRA_DIR" ]]; then
     echo "Error: Cyberinfrastructure directory not found at $INFRA_DIR" >&2
