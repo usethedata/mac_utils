@@ -7,7 +7,7 @@ import socket
 from datetime import datetime, timezone
 
 from . import __version__
-from .checks import apt, brew, chezmoi, reachability, synology_os, synology_packages
+from .checks import apt, brew, chezmoi, mcp_upstream, reachability, synology_os, synology_packages
 
 
 log = logging.getLogger(__name__)
@@ -21,6 +21,7 @@ _CHECKS = {
     brew.NAME: brew,
     synology_packages.NAME: synology_packages,
     synology_os.NAME: synology_os,
+    mcp_upstream.NAME: mcp_upstream,
 }
 
 

@@ -14,6 +14,7 @@ Authoritative plan: `Progs/Ongoing/Maintenance/system-status-check-plan.md` (out
 - Homebrew outdated (macOS)
 - apt upgradable (Ubuntu)
 - Synology DSM package + OS updates
+- MCP upstream changes for locally hosted MCP clones
 
 ## Installation
 

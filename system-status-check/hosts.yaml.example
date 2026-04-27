@@ -17,8 +17,19 @@ hosts:
 
   - alias: host3
     os: ubuntu
-    checks: [reachability, chezmoi, apt]
+    checks: [reachability, chezmoi, apt, mcp_upstream]
     local: true                      # runs without SSH (orchestrator host)
+    mcp_upstream:
+      # Per-repo `remote` selects which remote to fetch and compare against.
+      # Use `origin` for plain clones; use `upstream` (or whatever you named
+      # the second remote) for forks where the divergence baseline is upstream.
+      repos:
+        - name: example-mcp-clone
+          path: ~/Dropbox/BEWMain/Progs/ai/example-mcp-clone
+          remote: origin
+        - name: example-mcp-fork
+          path: ~/Dropbox/BEWMain/Progs/ai/example-mcp-fork
+          remote: upstream
 
   - alias: host4
     os: synology

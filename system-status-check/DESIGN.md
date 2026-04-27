@@ -15,6 +15,7 @@ A single nightly report that summarizes the update status of every *nix host an 
 - **apt upgradable** (Ubuntu) — with phased-update filtering
 - **Synology DSM available package updates** (DSM)
 - **Synology DSM available OS updates** (DSM)
+- **MCP upstream commits** — unreviewed commits in locally hosted MCP clones
 
 ### What it deliberately does not do
 - Apply updates of any kind
@@ -49,6 +50,7 @@ One module per capability under `src/system_status_check/checks/`:
 | `apt.py` | Ubuntu | `apt-get update` (sudoers-protected) + `apt list --upgradable` + phased-update filter |
 | `synology_packages.py` | Synology DSM | `synopkg checkupdateall` |
 | `synology_os.py` | Synology DSM | `sudo synoupgrade --check` (sudoers-protected) |
+| `mcp_upstream.py` | orchestrator host | `git fetch` against each configured MCP repo's remote; compare local HEAD to that remote's default branch |
 
 Each module exports `NAME` and a `run(host_cfg, settings) -> CheckResult-shaped dict` function. Adding a new check means adding one module and an entry in the dispatcher's `_CHECKS` registry, plus listing the check name in the relevant hosts' `checks:` array in `hosts.yaml`.
 
@@ -153,6 +155,16 @@ A previous iteration also ran `chezmoi update --dry-run`. That command prompts i
 - Known clean output: literal `UPGRADE_CHECKNEWDSM` on stdout, and **rc=255** (not 0). The parser keys off the stdout token, not the rc.
 - Independent fallback: each Synology emails its administrator when a DSM update is ready. If this check ever misbehaves, that email is the authoritative signal.
 - Items: `{raw: "<verbatim stdout>"}`.
+
+### MCP upstream
+- Per-repo: `git -C <path> fetch <remote> --quiet`, then resolve the remote's default branch via `git symbolic-ref --short refs/remotes/<remote>/HEAD`, then `git rev-list --count HEAD..<remote>/<branch>` and (if non-zero) `git log --no-merges --pretty=format:'%h %s' HEAD..<remote>/<branch>`.
+- Runs locally on the orchestrator host (the MCP clones live in `~/Dropbox/BEWMain/Progs/ai/`, which Dropbox syncs there). No SSH.
+- Per-repo `remote` field selects the remote to compare against. "Upstream" is conceptual: a plain clone uses `remote: origin`; a divergent fork uses a separately added `remote: upstream`. The reporting terminology ("upstream", "unreachable", "updates pending") is the same either way.
+- The check requires the remote's default branch to be set locally — `git remote set-head <remote> --auto` once per repo. Without it, the symbolic-ref lookup fails and the repo is reported as unreachable with a hint pointing at that command.
+- Items: `[{name, remote, branch, status: ok|updates_pending|unreachable, pending_count, commits: [{sha, subject}], error?}]`.
+- Counts: `repos_total`, `repos_with_updates`, `repos_unreachable`, `pending_remote` (sum of pending commits across repos; participates in the dispatcher's `updates_pending_total` rollup).
+- Status rollup: any `unreachable` repo → check `unreachable`; else any pending → `warn`; else `ok`. The `unreachable`-wins ordering matches the apt/brew convention that data-integrity issues take precedence over count signals.
+- Configured per-host under a `mcp_upstream:` block in `hosts.yaml`. Only meaningful on the orchestrator host (where the clones live).
 
 ### Reachability
 - Command: `ssh -o BatchMode=yes -o ConnectTimeout=<N> <alias> true`.
@@ -269,7 +281,6 @@ Validate either drop-in with `visudo -c -f /etc/sudoers.d/system-status-check` (
 - **Additional checkers** — cert expirations, Time Machine status, Tailscale `status`, disk-usage thresholds, backup-freshness for each NAS.
 - **macOS system software updates** — `softwareupdate -l` (non-privileged listing).
 - **Mac App Store available updates** — `mas outdated` (requires the `mas` CLI installed and signed in on each Mac).
-- **Upstream updates for locally running MCPs** — file-based version checks against the relevant `Progs/ai/` clones; consolidates an existing manual procedure into this report.
 - **Write-back into a task system** — auto-file a task when a high-severity entry appears.
 - **Disruptive-update tracking, with (conditional) package-pinning support.** A two-tier roadmap, gated on whether the lower tier is sufficient.
 

@@ -20,7 +20,7 @@ from pathlib import Path
 
 # Canonical check order across the report. Any check not listed falls
 # through to "after the known ones" in its configured position.
-_CHECK_ORDER = ("chezmoi", "synology_os", "synology_packages", "apt", "brew")
+_CHECK_ORDER = ("chezmoi", "synology_os", "synology_packages", "apt", "brew", "mcp_upstream")
 
 # Full label used in Details headings. Short label used in Summary line.
 _LABELS = {
@@ -29,6 +29,7 @@ _LABELS = {
     "brew":               ("Brew",              "Brew"),
     "synology_os":        ("Synology OS",       "OS"),
     "synology_packages":  ("Synology Packages", "Packages"),
+    "mcp_upstream":       ("MCP Upstream",      "MCP Upstream"),
 }
 
 _STAMP_STALE_SECONDS = 24 * 3600
@@ -203,6 +204,13 @@ def _summary_state(check_name: str, check: dict) -> str:
         n = counts.get("available", 0)
         return "no updates pending" if n == 0 else _ital("Update pending")
 
+    if check_name == "mcp_upstream":
+        if counts.get("repos_unreachable", 0) > 0:
+            return _bi("unreachable")
+        if counts.get("repos_with_updates", 0) > 0:
+            return _ital("updates pending")
+        return "no updates pending"
+
     return check.get("status", "")
 
 
@@ -256,6 +264,9 @@ def _detail_check(check_name: str, check: dict) -> list[str]:
 
     if check_name == "synology_os":
         return _detail_synology_os(bolded, check)
+
+    if check_name == "mcp_upstream":
+        return _detail_mcp_upstream(bolded, check)
 
     return [f"- {bolded}: {check.get('status', '')}"]
 
@@ -374,4 +385,52 @@ def _detail_synology_os(label: str, check: dict) -> list[str]:
     raw = check.get("raw")
     if raw:
         out.append(f"  - raw: `{raw}`")
+    return out
+
+
+def _detail_mcp_upstream(label: str, check: dict) -> list[str]:
+    counts = check.get("counts") or {}
+    n_updates = counts.get("repos_with_updates", 0)
+    n_unreach = counts.get("repos_unreachable", 0)
+
+    if n_updates == 0 and n_unreach == 0:
+        return [f"- {label}: no updates pending"]
+
+    head_parts: list[str] = []
+    if n_updates:
+        head_parts.append(
+            f"{n_updates} {_pluralize(n_updates, 'upstream')} with updates"
+        )
+    if n_unreach:
+        head_parts.append(_bi(f"{n_unreach} unreachable"))
+    out = [f"- {label}: " + ", ".join(head_parts)]
+
+    items = check.get("items") or []
+    # List unreachable repos first (most actionable), then repos with pending
+    # commits. Clean repos are intentionally omitted from the detail list.
+    for entry in items:
+        if entry.get("status") != "unreachable":
+            continue
+        remote = entry.get("remote") or ""
+        out.append(
+            f"  - {entry.get('name', '?')} ({remote}): {_bi('unreachable')}"
+            f" — {entry.get('error', '(no detail)')}"
+        )
+
+    for entry in items:
+        if entry.get("status") != "updates_pending":
+            continue
+        remote = entry.get("remote") or ""
+        branch = entry.get("branch") or ""
+        ref = f"{remote}/{branch}" if branch else remote
+        n = entry.get("pending_count", 0)
+        out.append(
+            f"  - {entry.get('name', '?')} ({ref}): "
+            f"{n} {_pluralize(n, 'commit')} pending"
+        )
+        for c in (entry.get("commits") or [])[:30]:
+            out.append(f"    - `{c.get('sha', '')}` {c.get('subject', '')}")
+        extra = n - 30
+        if extra > 0:
+            out.append(f"    - … and {extra} more")
     return out
