@@ -113,10 +113,13 @@ def _log_link(log_path: str | Path) -> str:
     name = p.name
     # The Markdown is read in Obsidian on a Mac, so the link must resolve
     # to the Mac-side Dropbox path even though this renderer runs on the
-    # orchestrator host.
+    # orchestrator host. Assumes the orchestrator and the Mac use the same
+    # username (true in this deployment); the username portion is derived
+    # from the orchestrator's $HOME so it isn't hard-coded here.
+    home = Path.home()
     mac_path = str(p).replace(
-        "/home/bruce/Dropbox",
-        "/Users/bruce/Library/CloudStorage/Dropbox",
+        str(home / "Dropbox"),
+        f"/Users/{home.name}/Library/CloudStorage/Dropbox",
     )
     return f"[{name}](vscode://file{mac_path})"
 
