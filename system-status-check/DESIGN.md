@@ -302,7 +302,7 @@ Validate either drop-in with `visudo -c -f /etc/sudoers.d/system-status-check` (
 ## Known limitations
 
 - **synology_os parser is half-validated.** We've only seen the clean path (`UPGRADE_CHECKNEWDSM`, rc=255). Behavior when a real DSM update is pending is inferred from the existing parser logic and is captured verbatim in the report's `raw` field. The DSM email notification remains the authoritative independent signal until a real update appears and the parser is refined.
-- **silverbear-style "expected unreachable" hosts can mask real outages.** A laptop that's been unreachable for many consecutive nights still reports as a quiet warn rather than escalating. A "last seen" / consecutive-unreachable-N-nights concept would help; not implemented in v1.
+- **Laptop-style "expected unreachable" hosts can mask real outages.** A laptop that's been unreachable for many consecutive nights still reports as a quiet warn rather than escalating. A "last seen" / consecutive-unreachable-N-nights concept would help; not implemented in v1.
 - **chezmoi `git -- fetch` runs nightly.** Trivial network cost, but worth noting if hosts are bandwidth-constrained.
 
 ## Follow-ups tracked elsewhere

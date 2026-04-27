@@ -1,5 +1,5 @@
 [Unit]
-Description=Nightly status report for Bruce's managed *nix systems
+Description=Nightly status report for the User's managed *nix systems
 Wants=network-online.target
 After=network-online.target
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# install.sh — set up system-status-check on grizzledbear.
+# install.sh — set up system-status-check on the orchestrator host.
 #
 # Idempotent. Run after pulling a fresh copy of the repo.
 #

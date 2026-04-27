@@ -1,8 +1,8 @@
 # Example hosts.yaml for system-status-check.
 #
 # The real config lives at ~/.config/system-status-check/hosts.yaml on
-# grizzledbear and is not committed to this public repo. Copy this file there
-# and replace the placeholder aliases with real SSH aliases from
+# the orchestrator host and is not committed to this public repo. Copy this
+# file there and replace the placeholder aliases with real SSH aliases from
 # ~/.ssh/config.
 
 hosts:

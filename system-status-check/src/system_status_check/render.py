@@ -2,7 +2,7 @@
 
 The Markdown is informational, not evaluative: no "OK / WARN / ERROR"
 labels in the user-facing output. States of concern are conveyed by
-typography leveraging Bruce's Obsidian theme (bold=red, italic=blue):
+typography leveraging the User's Obsidian theme (bold=red, italic=blue):
 
   Category labels (check names)          -> **bold**
   Clean / no updates                     -> plain text
@@ -112,8 +112,8 @@ def _log_link(log_path: str | Path) -> str:
     p = Path(log_path)
     name = p.name
     # The Markdown is read in Obsidian on a Mac, so the link must resolve
-    # to the Mac-side Dropbox path even though this renderer runs on
-    # grizzledbear.
+    # to the Mac-side Dropbox path even though this renderer runs on the
+    # orchestrator host.
     mac_path = str(p).replace(
         "/home/bruce/Dropbox",
         "/Users/bruce/Library/CloudStorage/Dropbox",

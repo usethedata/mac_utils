@@ -155,7 +155,7 @@ def run(host_cfg: dict, settings: dict) -> dict:
     status_body, status_rc = sections["STATUS"]
     git_body, git_rc = sections["GITSTATUS"]
 
-    # Any non-zero rc in a sub-check is a hard error — surface it so Bruce
+    # Any non-zero rc in a sub-check is a hard error — surface it so the User
     # knows chezmoi itself is unhappy (not just reporting drift).
     sub_errors = []
     if status_rc != 0:

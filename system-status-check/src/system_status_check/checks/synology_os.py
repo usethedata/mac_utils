@@ -2,7 +2,7 @@
 
 Uses `sudo -n /usr/syno/sbin/synoupgrade --check`. Requires a sudoers
 drop-in with NOPASSWD and `Defaults:<user> !requiretty` — see the plan's
-"Tasks Bruce does manually (sudo required)" section.
+"Tasks the User does manually (sudo required)" section.
 
 Non-obvious behavior: `synoupgrade --check` returns **rc=255** (not 0) on
 clean hosts when no DSM update is ready, along with stdout
@@ -11,7 +11,7 @@ token as the authoritative "no update" signal regardless of rc. Any other
 output (or absence of the token) is surfaced verbatim as "may be pending"
 until we see real update output and can refine.
 
-Independent fallback: each Synology is configured to email Bruce when a
+Independent fallback: each Synology is configured to email the User when a
 DSM update is ready to install. If this check misbehaves, the email is
 the authoritative signal.
 """

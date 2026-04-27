@@ -41,7 +41,7 @@ def _setup_logging(log_dir: Path) -> Path:
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p = argparse.ArgumentParser(
         prog="system-status-check",
-        description="Nightly status report for Bruce's managed *nix systems.",
+        description="Nightly status report for the User's managed *nix systems.",
     )
     p.add_argument(
         "--config", default=_DEFAULT_CONFIG,

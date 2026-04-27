@@ -7,7 +7,7 @@ import time
 from dataclasses import dataclass
 
 
-# Shared PATH prelude: covers the union of locations where Bruce's managed
+# Shared PATH prelude: covers the union of locations where the User's managed
 # tools live across macOS (homebrew intel + apple silicon), Ubuntu (snap),
 # and Synology DSM (/usr/syno/{bin,sbin}). Prepended to every remote script
 # so the non-login ssh shell can find chezmoi, synopkg, etc. without relying
